@@ -29,6 +29,7 @@ public class FlutterAppBadgerPlugin implements MethodCallHandler, FlutterPlugin 
   private static final String NOTIFICATION_CHANNEL = "g123k/flutter_app_badger";
   private NotificationManager mNotificationManager;
   private int notificationId = 0;
+  private Notification.Builder builder;
 
   /**
    * Plugin registration.
@@ -40,41 +41,26 @@ public class FlutterAppBadgerPlugin implements MethodCallHandler, FlutterPlugin 
     channel.setMethodCallHandler(this);
     applicationContext = flutterPluginBinding.getApplicationContext();
     mNotificationManager = (NotificationManager) applicationContext.getSystemService(applicationContext.NOTIFICATION_SERVICE);
+    builder = new Notification.Builder(applicationContext)
+    .setContentTitle("")
+    .setContentText("")
+    .setSmallIcon(R.drawable.ic_launcher);
   }
 
   @Override
   public void onDetachedFromEngine(FlutterPluginBinding flutterPluginBinding) {
     channel.setMethodCallHandler(null);
     applicationContext = null;
+    builder = null;
   }
 
   @Override
   public void onMethodCall(MethodCall call, Result result) {
     if (call.method.equals("updateBadgeCount")) {
       if (Build.MANUFACTURER.equalsIgnoreCase("Xiaomi")) {
-      Notification.Builder  builder = new Notification.Builder(applicationContext)
-        .setContentTitle(call.argument("title").toString())
-        .setContentText(call.argument("description").toString())
-        .setSmallIcon(applicationContext.getApplicationInfo().icon);
-
-      mNotificationManager.cancel(notificationId);
-      notificationId++;
-
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        setupNotificationChannel();
-
-        builder.setChannelId(NOTIFICATION_CHANNEL);
+        ShortcutBadger.applyNotification(applicationContext, builder.build(), Integer.valueOf(call.argument("count").toString()));
       }
-      Notification notification = builder.build();
-      ShortcutBadger.applyNotification(applicationContext, notification, Integer.valueOf(call.argument("count").toString()));
-      mNotificationManager.notify(notificationId, notification);
-    }
-    else
-    {
-      Log.d("App Badger: ", "Other Model detected");
-
-    ShortcutBadger.applyCount(applicationContext, Integer.valueOf(call.argument("count").toString()));
-    }
+      ShortcutBadger.applyCount(applicationContext, Integer.valueOf(call.argument("count").toString()));
       result.success(null);
     } else if (call.method.equals("removeBadge")) {
       ShortcutBadger.removeCount(applicationContext);
