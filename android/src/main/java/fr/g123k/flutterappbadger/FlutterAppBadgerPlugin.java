@@ -44,7 +44,7 @@ public class FlutterAppBadgerPlugin implements MethodCallHandler, FlutterPlugin 
     builder = new Notification.Builder(applicationContext)
     .setContentTitle("")
     .setContentText("")
-    .setSmallIcon(R.drawable.ic_launcher);
+    .setSmallIcon(applicationContext.getApplicationInfo().icon);
   }
 
   @Override
